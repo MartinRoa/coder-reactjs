@@ -3,9 +3,26 @@ import styles from "./Navbar.module.css";
 import imagenLogo from "../../images/1216.png";
 
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebaseConfig";
 
 const Navbar = ({ children }) => {
-  let numero = 12;
+  const [categoryList, setCategoryList] = useState([]);
+
+  useEffect(() => {
+    const itemsCollection = collection(db, "categories");
+    getDocs(itemsCollection).then((res) => {
+      let arrayCategories = res.docs.map((category) => {
+        return {
+          ...category.data(),
+          id: category.id,
+        };
+      });
+      setCategoryList(arrayCategories);
+    });
+  }, []);
+
   return (
     <div>
       <div className={styles.containerNavbar}>
@@ -13,20 +30,19 @@ const Navbar = ({ children }) => {
           <img className={styles.logo} src={imagenLogo} alt="" />
         </Link>
         <ul className={styles.containerList}>
-          <Link to="/" className={styles.cursorList}>
-            Todas
-          </Link>
-          <Link to="/category/rubias" className={styles.cursorList}>
-            Rubias
-          </Link>
-          <Link to="/category/rojas" className={styles.cursorList}>
-            Rojas
-          </Link>
-          <Link to="/category/negras" className={styles.cursorList}>
-            Negras
-          </Link>
+          {categoryList.map((category) => {
+            return (
+              <Link
+                key={category.id}
+                to={category.path}
+                className={styles.cursorList}
+              >
+                {category.title}
+              </Link>
+            );
+          })}
         </ul>
-        <CartWidget numero={numero} />
+        <CartWidget />
       </div>
       {children}
     </div>

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { products } from "../../productsMock";
 import ItemList from "../ItemList/ItemList";
 import ClipLoader from "react-spinners/ClipLoader";
 import { db } from "../../firebaseConfig";
@@ -17,22 +16,9 @@ const ItemListContainer = () => {
 
   const [items, setItems] = useState([]);
 
-    const productosFiltrados = products.filter(
-    (elemento) => elemento.category === categoryName);
-
-    console.log(productosFiltrados)
-
   useEffect(() => {
-    const itemsCollection = collection(db, "products");
-    let consulta = undefined;
-    if (categoryName) {
-      const q = query(itemsCollection, where("category", "==", categoryName));
-      consulta = getDocs(q);
-    } else {
-      consulta = getDocs(itemsCollection);
-    }
-
-    consulta.then((res) => {
+    const itemsCollection = categoryName ? query(collection(db, "products"), where('category', "==", categoryName)) : collection(db, "products");
+   getDocs(itemsCollection).then((res) => {
       let products = res.docs.map((product) => {
         return {
           ...product.data(),
@@ -44,10 +30,7 @@ const ItemListContainer = () => {
     });
   }, [categoryName]);
 
-  /*   if( items.length === 0 ){
-    return <h1>Cargando...</h1>
-  } */
-  if (items.length === 0) {
+ 
     return (
       <div>
         {items.length > 0 ? (
@@ -63,7 +46,7 @@ const ItemListContainer = () => {
         )}
       </div>
     );
-  } 
+  
 };
 
 export default ItemListContainer;
